@@ -69,6 +69,74 @@ export type SegmentRules = {
   logic: SegmentLogic;
 };
 
+export type SegmentRecord = {
+  id: string;
+  workspaceId: string;
+  name: string;
+  description: string | null;
+  rules: SegmentRules;
+  subscriberCount: number;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+// Subscriber types
+export type SubscriberStatus = "active" | "unsubscribed";
+
+export type SubscriberRecord = {
+  id: string;
+  workspaceId: string;
+  phone: string | null;
+  email: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  smsConsent: boolean;
+  emailConsent: boolean;
+  smsOptInAt: string | null;
+  emailOptInAt: string | null;
+  smsOptOutAt: string | null;
+  emailOptOutAt: string | null;
+  source: string | null;
+  customAttrs: Record<string, unknown>;
+  timezone: string | null;
+  country: string | null;
+  city: string | null;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type SubscriberEventRecord = {
+  id: string;
+  type: string;
+  properties: Record<string, unknown> | null;
+  createdAt: string;
+};
+
+export type ConsentLogRecord = {
+  id: string;
+  channel: "sms" | "email";
+  action: "opt_in" | "opt_out";
+  method: string;
+  createdAt: string;
+};
+
+export type SubscriberDetailRecord = SubscriberRecord & {
+  events: SubscriberEventRecord[];
+  consentLog: ConsentLogRecord[];
+};
+
+export type SubscriberListQuery = {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  status?: SubscriberStatus | "all";
+  tag?: string;
+  sortBy?: "createdAt" | "updatedAt" | "firstName" | "lastName" | "email";
+  sortOrder?: "asc" | "desc";
+};
+
 // Sign-up unit types
 export type SignupUnitType = "popup" | "flyout" | "fullscreen" | "banner" | "embedded" | "landing_page";
 
