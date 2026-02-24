@@ -1,0 +1,323 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ========================
+// AUTH & WORKSPACE
+// ========================
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  workspaces    WorkspaceMember[]
+  accounts      Account[]
+  sessions      Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Workspace {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  plan        String   @default("free")
+  twilioSid   String?
+  twilioToken String?
+  twilioPhone String?
+  resendKey   String?
+  openaiKey   String?
+  timezone    String   @default("America/New_York")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  members     WorkspaceMember[]
+  subscribers Subscriber[]
+  segments    Segment[]
+  campaigns   Campaign[]
+  journeys    Journey[]
+  signupUnits SignupUnit[]
+  messages    Message[]
+  events      Event[]
+  webhooks    Webhook[]
+  apiKeys     ApiKey[]
+}
+
+model WorkspaceMember {
+  id          String   @id @default(cuid())
+  userId      String
+  workspaceId String
+  role        String   @default("member")
+  user        User     @relation(fields: [userId], references: [id])
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+
+  @@unique([userId, workspaceId])
+}
+
+model ApiKey {
+  id          String    @id @default(cuid())
+  workspaceId String
+  name        String
+  key         String    @unique
+  lastUsed    DateTime?
+  createdAt   DateTime  @default(now())
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+}
+
+// ========================
+// SUBSCRIBERS
+// ========================
+
+model Subscriber {
+  id            String    @id @default(cuid())
+  workspaceId   String
+  phone         String?
+  email         String?
+  firstName     String?
+  lastName      String?
+  smsConsent    Boolean   @default(false)
+  emailConsent  Boolean   @default(false)
+  smsOptInAt    DateTime?
+  emailOptInAt  DateTime?
+  smsOptOutAt   DateTime?
+  emailOptOutAt DateTime?
+  source        String?
+  customAttrs   Json?     @default("{}")
+  timezone      String?
+  country       String?
+  city          String?
+  tags          String[]  @default([])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  workspace     Workspace @relation(fields: [workspaceId], references: [id])
+  events        Event[]
+  messages      Message[]
+  segmentMemberships SegmentMembership[]
+  journeyStates JourneySubscriberState[]
+  consentLog    ConsentLog[]
+
+  @@unique([workspaceId, phone])
+  @@unique([workspaceId, email])
+  @@index([workspaceId, smsConsent])
+  @@index([workspaceId, emailConsent])
+}
+
+model ConsentLog {
+  id           String   @id @default(cuid())
+  subscriberId String
+  channel      String
+  action       String
+  method       String
+  ipAddress    String?
+  userAgent    String?
+  metadata     Json?
+  createdAt    DateTime @default(now())
+  subscriber   Subscriber @relation(fields: [subscriberId], references: [id])
+}
+
+// ========================
+// SEGMENTS
+// ========================
+
+model Segment {
+  id              String   @id @default(cuid())
+  workspaceId     String
+  name            String
+  description     String?
+  rules           Json
+  subscriberCount Int      @default(0)
+  isDefault       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  workspace       Workspace @relation(fields: [workspaceId], references: [id])
+  memberships     SegmentMembership[]
+}
+
+model SegmentMembership {
+  id           String   @id @default(cuid())
+  segmentId    String
+  subscriberId String
+  addedAt      DateTime @default(now())
+  segment      Segment    @relation(fields: [segmentId], references: [id])
+  subscriber   Subscriber @relation(fields: [subscriberId], references: [id])
+
+  @@unique([segmentId, subscriberId])
+}
+
+// ========================
+// CAMPAIGNS
+// ========================
+
+model Campaign {
+  id          String    @id @default(cuid())
+  workspaceId String
+  name        String
+  type        String
+  status      String    @default("draft")
+  content     Json
+  segmentIds  String[]  @default([])
+  scheduledAt DateTime?
+  sentAt      DateTime?
+  sendCount   Int       @default(0)
+  abTest      Json?
+  aiGenerated Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  messages    Message[]
+}
+
+// ========================
+// JOURNEYS
+// ========================
+
+model Journey {
+  id          String   @id @default(cuid())
+  workspaceId String
+  name        String
+  status      String   @default("draft")
+  trigger     Json
+  nodes       Json
+  edges       Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  states      JourneySubscriberState[]
+}
+
+model JourneySubscriberState {
+  id            String    @id @default(cuid())
+  journeyId     String
+  subscriberId  String
+  currentNodeId String?
+  status        String    @default("active")
+  enteredAt     DateTime  @default(now())
+  completedAt   DateTime?
+  journey       Journey    @relation(fields: [journeyId], references: [id])
+  subscriber    Subscriber @relation(fields: [subscriberId], references: [id])
+
+  @@unique([journeyId, subscriberId])
+}
+
+// ========================
+// SIGN-UP UNITS
+// ========================
+
+model SignupUnit {
+  id           String   @id @default(cuid())
+  workspaceId  String
+  name         String
+  type         String
+  status       String   @default("draft")
+  design       Json
+  displayRules Json
+  collectEmail Boolean  @default(true)
+  collectSms   Boolean  @default(true)
+  offerType    String?
+  offerValue   String?
+  views        Int      @default(0)
+  submissions  Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  workspace    Workspace @relation(fields: [workspaceId], references: [id])
+}
+
+// ========================
+// MESSAGES
+// ========================
+
+model Message {
+  id           String    @id @default(cuid())
+  workspaceId  String
+  subscriberId String
+  campaignId   String?
+  journeyId    String?
+  channel      String
+  content      Json
+  status       String    @default("queued")
+  sentAt       DateTime?
+  deliveredAt  DateTime?
+  clickedAt    DateTime?
+  revenue      Float     @default(0)
+  externalId   String?
+  createdAt    DateTime  @default(now())
+  workspace    Workspace  @relation(fields: [workspaceId], references: [id])
+  subscriber   Subscriber @relation(fields: [subscriberId], references: [id])
+  campaign     Campaign?  @relation(fields: [campaignId], references: [id])
+
+  @@index([workspaceId, channel, sentAt])
+  @@index([campaignId])
+}
+
+// ========================
+// EVENTS
+// ========================
+
+model Event {
+  id           String    @id @default(cuid())
+  workspaceId  String
+  subscriberId String?
+  type         String
+  properties   Json?
+  createdAt    DateTime  @default(now())
+  workspace    Workspace  @relation(fields: [workspaceId], references: [id])
+  subscriber   Subscriber? @relation(fields: [subscriberId], references: [id])
+
+  @@index([workspaceId, type, createdAt])
+  @@index([subscriberId, type])
+}
+
+// ========================
+// WEBHOOKS
+// ========================
+
+model Webhook {
+  id          String   @id @default(cuid())
+  workspaceId String
+  url         String
+  events      String[]
+  secret      String
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+}
