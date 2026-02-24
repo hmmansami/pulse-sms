@@ -81,6 +81,6 @@ export async function GET(request: NextRequest) {
     bucket.purchaseRevenue += revenue;
   }
 
-  const data = [...rowsMap.values()];
+  const data = Array.from(rowsMap.values());
   return NextResponse.json({ success: true, data });
 }
