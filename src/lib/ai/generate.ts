@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 type BrandVoice = {
   tone?: string;
@@ -56,28 +56,20 @@ async function askForList(params: {
   apiKey?: string;
   fallback: string[];
 }) {
-  const key = params.apiKey ?? process.env.OPENAI_API_KEY;
+  const key = params.apiKey ?? process.env.GEMINI_API_KEY;
   if (!key) return params.fallback;
 
   try {
-    const client = new OpenAI({ apiKey: key });
-    const completion = await client.chat.completions.create({
-      model: process.env.OPENAI_MODEL ?? "gpt-4o-mini",
-      temperature: 0.8,
-      messages: [
-        {
-          role: "system",
-          content:
-            "Return only 3 lines, one variant per line, no numbering, no extra commentary.",
-        },
-        {
-          role: "user",
-          content: params.prompt,
-        },
-      ],
+    const genAI = new GoogleGenerativeAI(key);
+    const model = genAI.getGenerativeModel({
+      model: process.env.GEMINI_MODEL ?? "gemini-2.0-flash",
     });
 
-    const text = completion.choices[0]?.message?.content ?? "";
+    const result = await model.generateContent(
+      `Return only 3 lines, one variant per line, no numbering, no extra commentary.\n\n${params.prompt}`
+    );
+
+    const text = result.response.text();
     const lines = text
       .split("\n")
       .map((line) => line.replace(/^[-*\d.)\s]+/, "").trim())
