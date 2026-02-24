@@ -70,9 +70,9 @@ export async function PUT(
       data: {
         name: body.name,
         status: body.status,
-        trigger: body.trigger,
-        nodes: body.nodes,
-        edges: body.edges,
+        ...(body.trigger ? { trigger: JSON.parse(JSON.stringify(body.trigger)) } : {}),
+        ...(body.nodes ? { nodes: JSON.parse(JSON.stringify(body.nodes)) } : {}),
+        ...(body.edges ? { edges: JSON.parse(JSON.stringify(body.edges)) } : {}),
       },
     });
 

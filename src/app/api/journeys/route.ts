@@ -60,9 +60,9 @@ export async function POST(request: NextRequest) {
         workspaceId,
         name: body.name?.trim() || "Untitled Journey",
         status: body.status ?? "draft",
-        trigger: body.trigger ?? defaultTrigger,
-        nodes: body.nodes ?? defaultNodes,
-        edges: body.edges ?? defaultEdges,
+        trigger: JSON.parse(JSON.stringify(body.trigger ?? defaultTrigger)),
+        nodes: JSON.parse(JSON.stringify(body.nodes ?? defaultNodes)),
+        edges: JSON.parse(JSON.stringify(body.edges ?? defaultEdges)),
       },
     });
 
