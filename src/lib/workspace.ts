@@ -36,3 +36,13 @@ export async function resolveWorkspaceIdFromRequest(
 
   return getDefaultWorkspaceId();
 }
+
+// Alias used by journey routes
+export const getWorkspaceId = resolveWorkspaceIdFromRequest;
+
+// Alias used by journey routes
+export async function ensureWorkspace(workspaceId: string) {
+  const workspace = await db.workspace.findUnique({ where: { id: workspaceId } });
+  if (!workspace) throw new Error("Workspace not found");
+  return workspace;
+}

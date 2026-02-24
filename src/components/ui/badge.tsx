@@ -10,6 +10,9 @@ const badgeVariants = cva("inline-flex items-center rounded-full border px-2.5 p
       secondary: "border-transparent bg-secondary text-secondary-foreground",
       destructive: "border-transparent bg-destructive text-destructive-foreground",
       outline: "text-foreground",
+      success: "border-transparent bg-green-100 text-green-800",
+      muted: "border-transparent bg-gray-100 text-gray-600",
+      warning: "border-transparent bg-yellow-100 text-yellow-800",
     },
   },
   defaultVariants: {
