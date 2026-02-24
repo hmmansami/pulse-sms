@@ -1,13 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getWorkspaceId } from "@/lib/workspace";
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const workspaceId = getWorkspaceId(request);
+    const workspaceId = await getWorkspaceId(request);
 
     const journey = await db.journey.findFirst({
       where: {

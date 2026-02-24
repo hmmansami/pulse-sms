@@ -1,14 +1,14 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import type { JourneyEdge, JourneyNode, JourneyTrigger } from "@/types";
 import { db } from "@/lib/db";
 import { getWorkspaceId } from "@/lib/workspace";
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const workspaceId = getWorkspaceId(request);
+    const workspaceId = await getWorkspaceId(request);
 
     const journey = await db.journey.findFirst({
       where: {
@@ -40,11 +40,11 @@ export async function GET(
 }
 
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const workspaceId = getWorkspaceId(request);
+    const workspaceId = await getWorkspaceId(request);
     const body = (await request.json()) as {
       name?: string;
       status?: "draft" | "active" | "paused";
@@ -92,11 +92,11 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const workspaceId = getWorkspaceId(request);
+    const workspaceId = await getWorkspaceId(request);
 
     const existing = await db.journey.findFirst({
       where: { id: params.id, workspaceId },

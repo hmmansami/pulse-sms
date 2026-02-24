@@ -1,13 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getWorkspaceId } from "@/lib/workspace";
 
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const workspaceId = getWorkspaceId(request);
+    const workspaceId = await getWorkspaceId(request);
     const body = (await request.json()) as { status?: "active" | "paused" | "draft" };
 
     if (!body.status || !["active", "paused", "draft"].includes(body.status)) {

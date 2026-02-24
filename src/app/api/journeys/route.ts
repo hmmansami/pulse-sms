@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import type { JourneyEdge, JourneyNode, JourneyTrigger } from "@/types";
 import { db } from "@/lib/db";
 import { ensureWorkspace, getWorkspaceId } from "@/lib/workspace";
@@ -18,9 +18,9 @@ const defaultTrigger: JourneyTrigger = {
   event: "subscriber_created",
 };
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const workspaceId = getWorkspaceId(request);
+    const workspaceId = await getWorkspaceId(request);
 
     const journeys = await db.journey.findMany({
       where: { workspaceId },
@@ -42,9 +42,9 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const workspaceId = getWorkspaceId(request);
+    const workspaceId = await getWorkspaceId(request);
     await ensureWorkspace(workspaceId);
 
     const body = (await request.json()) as {

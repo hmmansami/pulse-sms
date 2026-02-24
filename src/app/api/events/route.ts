@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { processIncomingEvent } from "@/lib/journeys/engine";
 import { ensureWorkspace, getWorkspaceId } from "@/lib/workspace";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const workspaceId = getWorkspaceId(request);
+    const workspaceId = await getWorkspaceId(request);
     await ensureWorkspace(workspaceId);
 
     const body = (await request.json()) as {
