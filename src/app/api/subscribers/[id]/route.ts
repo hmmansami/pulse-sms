@@ -174,7 +174,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
             }
           : {}),
         ...(parsed.source !== undefined ? { source: normalizeNullableString(parsed.source) } : {}),
-        ...(parsed.customAttrs !== undefined ? { customAttrs: parsed.customAttrs } : {}),
+        ...(parsed.customAttrs !== undefined ? { customAttrs: JSON.parse(JSON.stringify(parsed.customAttrs)) } : {}),
         ...(parsed.timezone !== undefined ? { timezone: normalizeNullableString(parsed.timezone) } : {}),
         ...(parsed.country !== undefined ? { country: normalizeNullableString(parsed.country) } : {}),
         ...(parsed.city !== undefined ? { city: normalizeNullableString(parsed.city) } : {}),
