@@ -12,6 +12,7 @@ const credentialsSchema = z.object({
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
   session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
@@ -77,7 +78,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       if (token.id && !token.workspaceId) {
         const membership = await db.workspaceMember.findFirst({
-          where: { userId: token.id },
+          where: { userId: token.id as string },
           orderBy: {
             workspace: {
               createdAt: "asc",
@@ -95,9 +96,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id ?? "";
-        session.user.workspaceId = token.workspaceId;
-        session.user.role = token.role;
+        session.user.id = (token.id as string) ?? "";
+        session.user.workspaceId = token.workspaceId as string;
+        session.user.role = token.role as string;
       }
 
       return session;
