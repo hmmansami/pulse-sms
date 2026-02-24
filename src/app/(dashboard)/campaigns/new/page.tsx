@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import Link from "next/link";
 
 import { CampaignCreator } from "@/components/campaigns/campaign-creator";
