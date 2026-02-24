@@ -78,7 +78,7 @@ async function processCampaign(job: Job<SendCampaignJobData>): Promise<void> {
         campaignId: campaign.id,
         channel: campaign.type,
         status: "queued",
-        content: campaign.content,
+        content: campaign.content ?? {},
       },
     });
 
