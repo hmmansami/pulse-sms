@@ -1,7 +1,12 @@
-export const dynamic = 'force-dynamic';
+"use client";
 
-import { redirect } from "next/navigation";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function DashboardHomePage() {
-  redirect("/analytics");
+  const router = useRouter();
+  useEffect(() => {
+    router.replace("/analytics");
+  }, [router]);
+  return null;
 }
