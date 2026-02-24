@@ -196,7 +196,7 @@ export async function POST(request: NextRequest) {
         smsOptInAt: parsed.smsConsent ? now : null,
         emailOptInAt: parsed.emailConsent ? now : null,
         source: normalizeNullableString(parsed.source) ?? "api",
-        customAttrs: parsed.customAttrs,
+        customAttrs: parsed.customAttrs ? JSON.parse(JSON.stringify(parsed.customAttrs)) : undefined,
         timezone: normalizeNullableString(parsed.timezone),
         country: normalizeNullableString(parsed.country),
         city: normalizeNullableString(parsed.city),
