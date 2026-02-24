@@ -147,9 +147,10 @@ export function JourneyCanvas({
       if (!canvasRef.current || !("clientX" in activatorEvent)) return;
 
       const rect = canvasRef.current.getBoundingClientRect();
+      const ev = activatorEvent as MouseEvent;
       onAddNode(data.nodeType, {
-        x: activatorEvent.clientX - rect.left - 110,
-        y: activatorEvent.clientY - rect.top - 46,
+        x: ev.clientX - rect.left - 110,
+        y: ev.clientY - rect.top - 46,
       });
     }
   };
