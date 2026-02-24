@@ -6,6 +6,7 @@ const authPages = new Set(["/login", "/register"]);
 
 function isProtectedPath(pathname: string) {
   if (pathname.startsWith("/api/auth")) return false;
+  if (pathname.startsWith("/api/health")) return false;
   if (pathname.startsWith("/_next")) return false;
   if (pathname === "/favicon.ico") return false;
   if (pathname.includes(".")) return false;
