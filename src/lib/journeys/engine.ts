@@ -292,7 +292,7 @@ export async function processIncomingEvent(params: {
       workspaceId: params.workspaceId,
       subscriberId: params.subscriberId,
       type: params.type,
-      properties: params.properties ?? {},
+      properties: params.properties ? JSON.parse(JSON.stringify(params.properties)) : {},
     },
   });
 
