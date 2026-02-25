@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { auth } from "@/lib/auth";
 
 const authPages = new Set(["/login", "/register"]);
 
@@ -13,10 +13,9 @@ function isProtectedPath(pathname: string) {
   return !authPages.has(pathname);
 }
 
-export default async function middleware(req: NextRequest) {
+export default auth((req) => {
   const { pathname } = req.nextUrl;
-  const token = await getToken({ req, secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET });
-  const isAuthed = Boolean(token);
+  const isAuthed = Boolean(req.auth);
 
   if (!isAuthed && isProtectedPath(pathname)) {
     const loginUrl = new URL("/login", req.url);
@@ -29,12 +28,12 @@ export default async function middleware(req: NextRequest) {
   }
 
   const requestHeaders = new Headers(req.headers);
-  if (token?.workspaceId && typeof token.workspaceId === "string") {
-    requestHeaders.set("x-workspace-id", token.workspaceId);
+  if (req.auth?.user?.workspaceId) {
+    requestHeaders.set("x-workspace-id", req.auth.user.workspaceId);
   }
 
   return NextResponse.next({ request: { headers: requestHeaders } });
-}
+});
 
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
