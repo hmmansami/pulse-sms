@@ -44,10 +44,8 @@ function LoginForm() {
         return;
       }
 
-      // Login succeeded - session cookie is set
-      setIsLoading(false);
-      router.push(callbackUrl);
-      router.refresh();
+      // Login succeeded - session cookie is set, do full page navigation
+      window.location.href = callbackUrl;
     } catch {
       setIsLoading(false);
       setError("Something went wrong. Please try again.");
