@@ -15,7 +15,8 @@ function isProtectedPath(pathname: string) {
 
 export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const token = await getToken({ req });
+  const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "";
+  const token = await getToken({ req, secret, salt: "authjs.session-token" });
   const isAuthed = Boolean(token);
 
   if (!isAuthed && isProtectedPath(pathname)) {
