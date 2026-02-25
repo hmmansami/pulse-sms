@@ -2,7 +2,6 @@
 
 import { Suspense, useState } from "react";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -25,22 +24,34 @@ function LoginForm() {
     setError(null);
     setIsLoading(true);
 
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-      callbackUrl,
-    });
+    try {
+      // Fetch CSRF token
+      const csrfRes = await fetch("/api/auth/csrf");
+      const { csrfToken } = await csrfRes.json();
 
-    setIsLoading(false);
+      // Post credentials as JSON
+      const res = await fetch("/api/auth/callback/credentials", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, csrfToken, json: true }),
+        credentials: "include",
+      });
 
-    if (!result || result.error) {
-      setError("Invalid email or password");
-      return;
+      // If redirected to error page, login failed
+      if (res.url.includes("error") || (!res.ok && res.status !== 302 && res.status !== 200)) {
+        setIsLoading(false);
+        setError("Invalid email or password");
+        return;
+      }
+
+      // Login succeeded - session cookie is set
+      setIsLoading(false);
+      router.push(callbackUrl);
+      router.refresh();
+    } catch {
+      setIsLoading(false);
+      setError("Something went wrong. Please try again.");
     }
-
-    router.push(result.url || "/analytics");
-    router.refresh();
   }
 
   return (
